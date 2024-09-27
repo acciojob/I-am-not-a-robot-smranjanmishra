@@ -1,71 +1,105 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const imageContainer = document.getElementById('images');
-    const resetButton = document.getElementById('reset');
-    const verifyButton = document.getElementById('verify');
-    const message = document.getElementById('para');
-    
-    const classes = ['img1', 'img2', 'img3', 'img4', 'img5'];
-    let selectedImages = [];
-    let selectedElements = [];
+//your code here
 
-    function initialize() {
-        selectedImages = [];
-        selectedElements = [];
-        message.textContent = "";
-        verifyButton.style.display = "none";
-        resetButton.style.display = "none";
-        renderImages();
+let container = document.querySelector('main');
+
+let imageClassName = ["img1", "img2", "img3", "img4", "img5"]
+
+let randomIndex = parseInt(Math.random()*5);
+let randomClassName = imageClassName[randomIndex];
+imageClassName.push(randomClassName);
+
+// [img1, img2, -1, img4, img5, img2]
+
+let count = 0
+for(let i = 0; count<6; i++){
+    let imgTag = document.createElement('img');
+    let randomIndex = parseInt(Math.random()*6); //2,2,2
+    if(imageClassName[randomIndex] == -1){
+        continue;
+    }
+    imgTag.className = imageClassName[randomIndex];
+    count++
+    imgTag.id = "img"+count;
+    imageClassName[randomIndex] = -1
+    container.append(imgTag);
+    imgTag.addEventListener("click", checkRobot)
+}
+
+let h3 = document.createElement('h3');
+h3.innerText = "Please click on the identical tiles to verify that you are not a robot."
+h3.id = "h"
+container.append(h3);
+
+
+let clicks = 0
+let previousImageSet = new Set()
+
+function checkRobot(e){
+
+    let clickedImage = e.target;
+    if(previousImageSet.has(clickedImage.id)){
+        return
+    }
+    previousImageSet.add(clickedImage.id)
+    console.log(previousImageSet)
+    clickedImage.classList.add("selected")
+    clicks++;
+
+    if(clicks == 1){
+        let resetButton = document.createElement('button');
+        resetButton.innerText = "Reset"
+        resetButton.id = "reset"
+        container.append(resetButton);
+        resetButton.addEventListener("click", reset)
     }
 
-    function renderImages() {
-        imageContainer.innerHTML = '';
-
-        // Pick a random image class to duplicate
-        const duplicateClass = classes[Math.floor(Math.random() * classes.length)];
+    if(clicks == 2){
+        let verifyButton = document.createElement('button');
+        verifyButton.innerText = "Verify"
+        verifyButton.id = "verify"
+        container.append(verifyButton);
+        verifyButton.addEventListener("click", verify)
+    }
+   
+    if(clicks>2){
+        let verifyButton = document.getElementById("verify");
+        if(verifyButton){
+            verifyButton.remove();
+        }
         
-        // Create an array with one duplicate
-        const images = [...classes, duplicateClass];
-
-        // Shuffle the images
-        images.sort(() => Math.random() - 0.5);
-
-        // Render images
-        images.forEach(imgClass => {
-            const img = document.createElement('img');
-            img.className = imgClass;
-            img.addEventListener('click', () => handleImageClick(img, imgClass));
-            imageContainer.appendChild(img);
-        });
     }
 
-    function handleImageClick(img, imgClass) {
-        if (selectedElements.length < 2 && !selectedElements.includes(img)) {
-            img.classList.add('selected');
-            selectedElements.push(img);
-            selectedImages.push(imgClass);
+    
+}
 
-            if (selectedElements.length > 0) {
-                resetButton.style.display = "block";
-            }
-
-            if (selectedElements.length === 2) {
-                verifyButton.style.display = "block";
-            }
-        }
+function reset(){
+    let selectedImages = document.querySelectorAll('.selected');
+    for(let t of selectedImages){
+         t.classList.remove("selected");
     }
+    clicks = 0;
+    previousImageSet.clear();
+    let verifyButton = document.getElementById("verify");
+    console.log(verifyButton)
+    if(verifyButton){
+        verifyButton.remove();
+    }
+    let resetButton = document.getElementById("reset");
+    resetButton.remove();
+}
 
-    resetButton.addEventListener('click', () => {
-        initialize();
-    });
 
-    verifyButton.addEventListener('click', () => {
-        if (selectedImages[0] === selectedImages[1]) {
-            message.textContent = "You are a human. Congratulations!";
-        } else {
-            message.textContent = "We can't verify you as a human. You selected the non-identical tiles.";
-        }
-        verifyButton.style.display = "none";
-    });
-
-    initialize();
-});
+function verify(){
+    let para = document.createElement('p');
+    para.id="para"
+    let selectedImages = document.querySelectorAll('.selected');
+    if(selectedImages[0].className == selectedImages[1].className){
+        para.innerText = "You are a human. Congratulations!"
+    }
+    else{
+        para.innerText = "We can't verify you as a human. You selected the non-identical tiles"
+    }
+    container.append(para);
+    let verifyButton = document.getElementById("verify");
+    verifyButton.remove();
+}
